@@ -1,0 +1,118 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>无标题文档</title>
+</head>
+
+<body>
+<div style="margin:10px auto; width:1040px;border:1px solid #dedede;padding:20px">
+       <div>
+           请选择年份：
+           <select id="year" onchange="yearChange(this)">
+               <option value="2011">2011年</option>
+               <option value="2012">2012年</option>
+               <option value="2013">2013年</option>
+               <option value="2014">2014年</option>
+               <option value="2015">2015年</option>
+               <option value="2016">2016年</option>
+               <option value="2017">2017年</option>
+           </select>
+       </div>
+        <div id="main" style="height:400px"></div>
+    </div>
+    
+    @*echarts 单文件引入*@
+<script src="~/Scripts/echarts-2.2.7/build/dist/echarts.js"></script>
+    <script src="~/Scripts/jquery-1.10.2.js"></script>
+<script type="text/javascript">
+    @*<script src="~/Scripts/echarts-2.2.7/build/dist/chart/bar.js"></script>*@
+    //路径配置
+    require.config({
+        paths: {
+            echarts: "/Scripts/echarts-2.2.7/build/dist"
+        }
+    });
+    var MYCHART;  //声明一个大写的全局变量，能不用全局的尽量就不要用全局变量
+    //使用
+    require(['echarts',      
+        'echarts/chart/bar'],  //按需加载
+        function (ec)
+        {
+            //实例dom
+             MYCHART = ec.init(document.getElementById("main"));
+            var option = {
+                tooltip: {
+                    show: true
+                },
+                legend: {
+                    data: ['得分']
+                },
+                xAxis: [
+                    {
+                        type: "category",
+                        data:['']
+                      //  data:["科比", "欧文", "詹姆斯", "库里", '杜兰特', '威少', '韦德']
+                    }
+                ],
+                yAxis: [
+                    {
+                        type: "value"
+                    }
+                ],
+                series: [
+                    {
+                        "name": "得分",
+                        "type": "bar",
+                         data:['']
+                         //data:[20102, 2000, 1200, 1002, 1204, 4545, 7878]
+                    }
+                ]
+            }
+            console.info(MYCHART);
+            //位echart对象加载数据
+            MYCHART.setOption(option,true);
+            loadOption(2011);
+        }
+    )
+    
+    
+    //ajax 异步加载配置数据项
+    function loadOption(year)
+    {
+        $.ajax({
+            url: '/Home/GetJson?year='+year,
+            type: 'get',
+            dataType: 'json',
+            async: false,
+            success: function (result) {
+                if (result)
+                {
+                    var option = MYCHART._option;  //e2中感觉这个命名十分奇怪，居然要这样获取，必须先设置才有这个属性
+                    debugger
+                    if (result.seriesData == null || result.xAxisData.length == 0) 
+                    {
+                        option.series[0].data = [''];
+                        option.xAxis[0].data = ['']
+                    }
+                    else {
+                        option.series[0].data = result.seriesData;
+                        option.xAxis[0].data = result.xAxisData;
+                    }
+                    MYCHART.setOption(option,true);
+                }
+            },
+            error: function ()
+            {
+                alert("不好意思请求失败了");
+            }
+        })
+    }
+    function yearChange(selectObj)
+    {
+        var year = $(selectObj).val();
+        loadOption(year);
+    }
+</script>
+</body>
+</html>

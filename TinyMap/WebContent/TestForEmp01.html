@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=ukkbWgwQRMAQSM7ccDee2xNYGl1qE3E5"></script>
+<link rel="stylesheet" type="text/css" href="./css/Index.css" media="all">
+<script type="text/javascript" src="./echarts-dist/echarts.js"></script>
+<script src="./js/jquery.min.js"></script>
+<script src="./js/jquery-3.1.1.js"></script>
+</head>
+<body>
+		 <div id="menu">
+				<ul> 
+					<li class="yes"><a indepth="true" href="./"  title="民族分布">民族分布</a></li>
+					<li ><a indepth="true" href="./edu01.html" title="教育情况">教育情况</a></li>
+					<li ><a href="./emp01.html" title="就业情况">就业情况</a></li>
+		</ul>	
+	  
+	   <select id="sizer_one" onchange="province()">
+              <option value ="nomean">请选择民族</option>
+			  <option value ="1" selected>藏族</option>
+			  <option value ="2">壮族</option>
+			  <option value="3">羌族</option>
+			  <option value="4">彝族</option>
+		</select>   
+
+     	<div style="height:950px;margin:0px auto;height:700px;border:#ccc solid 1px" id="dituContent"></div>
+ </div>
+ 
+<script type="text/javascript">
+
+
+var myChart;//全局变量能不用就不用
+//var option;
+
+require.config({
+            paths: 
+            {
+                echarts: './echarts-dist'
+            }
+        });
+        
+      
+        
+		require
+		(
+	            [
+	                'echarts',
+	                'echarts/chart/pie',
+	                'echarts/chart/map'   // 按需加载所需图表，如需动态类型切换功能，别忘了同时加载相应图表
+	                
+	            ],
+	  
+	            draw_init
+	           	
+		  );//require
+	      
+		  function draw_init(ec)
+          {
+	            myChart=ec.init(document.getElementById('dituContent'));
+	            myChart.showLoading({
+	            	
+	            	text: "图表数据正在努力加载..."
+	            	
+	            	});
+	            var option = 
+	            {
+	            	    tooltip :
+	            	    {
+	            	        trigger: 'item'
+	            	    },
+	            	    series : 
+	            	    [
+	            	        {
+	            	            name: '就学率排名前三名',
+	            	            type: 'map',
+	            	            mapType: 'china',
+	            	            mapLocation: 
+	            	            {
+	            	                x: 'left',
+	            	                y: 'top',
+	            	                width: '30%'
+	            	            },
+	            	            //roam: true,
+	            	            selectedMode : 'multiple',
+	            	            itemStyle:
+	            	            {
+	            	                //normal:{label:{show:true}},
+	            	                emphasis:{label:{show:true}}
+	            	            },
+	            	            data:
+	            	            [
+	            	                {name: '北京'}, //selected:false},//0
+	            	                {name: '天津'},//, selected:false},//1
+	            	                {name: '上海'},//, selected:false},//2
+	            	                {name: '重庆'},//, selected:false},//3
+	            	                {name: '河北'},//, selected:false},//4
+	            	                {name: '河南'},//, selected:false},//5
+	            	                {name: '云南'},//, selected:false},//6
+	            	                {name: '辽宁'},//, selected:false},//7
+	            	                {name: '黑龙江'},//, selected:false},//8
+	            	                {name: '湖南'},//, selected:false},//9
+	            	                {name: '安徽'},//, selected:false},//10
+	            	                {name: '山东'},//, selected:false},//11
+	            	                {name: '新疆'},//, selected:false},//12
+	            	                {name: '江苏'},//, selected:false},//13
+	            	                {name: '浙江'},//, selected:false},//14
+	            	                {name: '江西'},//, selected:false},//15
+	            	                {name: '湖北'},//, selected:false},//16
+	            	                {name: '广西'},//, selected:false},//17
+	            	                {name: '甘肃'},//, selected:false},//18
+	            	                {name: '山西'},//, selected:false},//19
+	            	                {name: '内蒙古'},//, selected:false},//20
+	            	                {name: '陕西'},//, selected:false},//21
+	            	                {name: '吉林'},//, selected:false},//22
+	            	                {name: '福建'},//, selected:false},//23
+	            	                {name: '贵州'},//, selected:false},//24
+	            	                {name: '广东'},//, selected:false},//25
+	            	                {name: '青海'},//, selected:false},//26
+	            	                {name: '西藏'},//, selected:false},//27
+	            	                {name: '四川'},//, selected:false},//28
+	            	                {name: '宁夏'},//, selected:false},//29
+	            	                {name: '海南'},//, selected:false},//30
+	            	                {name: '台湾'},//, selected:false},//31
+	            	                {name: '香港'},//, selected:false},//32
+	            	                {name: '澳门'},//, selected:false}//33
+	            	            ]
+	            	        }
+	            	    ]
+	            	   // animation: false
+	            	};//option
+	            
+	            	//window.option = option;
+	            	
+	            	var ecConfig = require('echarts/config');
+	            	myChart.on(ecConfig.EVENT.MAP_SELECTED,function (param)
+	            	{
+	            		var selected = param.selected;
+	            		var mapSeries = option.series[0];
+	            	    var selectedProvince;
+	            	    var name;
+	            	    var selectedProvince;
+	            	    for (var p = 0, len = mapSeries.data.length; p < len; p++) 
+	            	    {
+	            	        name = mapSeries.data[p].name;
+	            	        //mapSeries.data[p].selected = selected[name];//此举意在通过用户点击地图板块后留存select状态
+	            	        if (selected[name]) 
+	            	        {
+	            	        	 selectedProvince = name;//与下面注释的代码不同，此段代码可使被选省份一致保持高亮状态！！！！！！！
+	            	        }
+	            	    }
+	            	    if (typeof selectedProvince == 'undefined')
+	            	    {
+	            	        option.series.splice(1);
+	            	        option.legend = null;
+	            	        option.dataRange = null;
+	            	        myChart.setOption(option, true);
+	            	        return;
+	            	    }
+	            	    /*
+	            	    for (var i = 0, l = option.series[0].data.length; i < l; i++) 
+	            	    {
+	            	        name = option.series[0].data[i].name;
+	            	        option.series[0].data[i].selected = selected[name];//激活选中状态
+	            	        if (selected[name]) 
+	            	        {
+	            	            selectedProvince = name;
+	            	        }
+	            	    }
+	            	    if (typeof selectedProvince == 'undefined')
+	            	    {
+	            	        option.series.splice(1);
+	            	        option.legend = null;
+	            	        option.dataRange = null;
+	            	        myChart.setOption(option, true);
+	            	        return;
+	            	    }*/
+	            	    //设置联动的图形
+	            	   /* option.tooltip=
+	            	    	{
+	            	    		trigger: 'item',
+	            	            formatter: "{a} <br/>{b} : {c} ({d}%)"
+	            	    	};
+	            	    */
+	            	    option.series[1] = 
+	            	    {
+	            	        name: '受教育情况',
+	            	        type: 'pie',
+	            	        selectedMode: 'single',
+	                        radius : [0, 70],
+	                        
+	                        // for funnel
+	                        x: '20%',
+	                        width: '40%',
+	                        funnelAlign: 'right',
+	                        max: 1548,
+	                        
+	                        itemStyle : {
+	                            normal : {
+	                                label : {
+	                                    position : 'inner'
+	                                },
+	                                labelLine : {
+	                                    show : false
+	                                }
+	                            }
+	                        },
+	                        data://这个也需要使用ajax异步加载
+	                        [
+	                            {value:335,name:'小学'},
+	                            {value:679,name:'中学'},
+	                            {value:1548,name:'大学', selected:true}
+	                        ]
+	            	    };
+	            	    option.series[2] = 
+	            	    {
+	            	    		name:'就学专业领域比率',
+	            	            type:'pie',
+	            	            radius : [100, 140],
+	            	            
+	            	            // for funnel
+	            	            x: '60%',
+	            	            width: '35%',
+	            	            funnelAlign: 'left',
+	            	            max: 1048,
+	            	            
+	            	            data:[//需要使用ajax异步加载
+	            	                {value:335, name:'制造业'},
+	            	                {value:310, name:'金融、证券、保险业'},
+	            	                {value:234, name:'政府机关'},
+	            	                {value:135, name:'医药食品业'},
+	            	                {value:1048, name:'旅游交通民航业'},
+	            	                {value:251, name:'IT通讯业'},
+	            	                {value:147, name:'商贸业'},
+	            	                {value:102, name:'其他'}
+	            	            ]
+	            	    };
+	            	    option.dataRange = 
+	            	    {
+	            	        orient: 'horizontal',
+	            	        x: 'right',
+	            	        y:'top',
+	            	        min: 0,
+	            	        max: 1000,
+	            	        color:['orange','yellow'],
+	            	        text:['高','低'],           // 文本，默认为数值文本
+	            	        splitNumber:0
+	            	    };
+	            	    myChart.setOption(option, true);
+	            	})//myChart.on
+	            	                    
+					 window.onresize = myChart.onresize;//可使echarts大小自适应div
+					 
+					myChart.setOption(option,true);//第二个参数：可以通过notMerger参数为true阻止与上次option的合并
+					
+					
+					//loadSelect("Tibetan");//想实现一进去就默认是藏族页面
+			}//function	
+		  
+	    function province()
+	    {
+	  	  var sizer_one = document.getElementById("sizer_one");
+	  	  var one_value = sizer_one.value;
+	  	  loadSelect(one_value);
+	    }
+	  
+			
+	  function loadSelect(one_value)
+	  {
+		  $.ajax({  
+			          url: '/TinyMap/LoadProvince',  
+			          type: 'post',  
+			          data : {},
+			          dataType: 'json',  
+			          async: true,  
+			          success: function (result) {
+			          if(result)
+			          {    
+			        	   var option = myChart._option; //e2中感觉这个命名十分奇怪，居然要这样获取，必须先设置才有这个属性
+			        	  aler(result[0].pid);
+			        	  for(var i=0;i<result.length;i++)
+			        	  {       
+			        		  option.series[0].data[result[i].pid].selected=true;
+		                  }
+		                    myChart.setOption(option,true);
+			          }
+			  },  
+			          error: function ()  
+			          {  
+			              alert("不好意思您的请求失败了");  
+			          }  
+			      })//ajax  
+	  }
+		
+    
+	  
+	  
+    
+</script>
+</body>
+</html>

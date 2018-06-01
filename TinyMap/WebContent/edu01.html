@@ -1,0 +1,435 @@
+  <!-- 
+      *  edu01.html:民族教育情况的展现
+      *
+      *   Copyright(C) 2016.10.03-,田岑熙 tiancenxi@126.com
+      *   All rights reserved.
+      *
+   -->
+<html>
+
+    <head>
+        <meta charset="utf-8">
+        <link rel="stylesheet" type="text/css" href="./css/Index.css" media="all">
+        <script src="./echarts-js/echarts.js"></script>
+        <script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=ukkbWgwQRMAQSM7ccDee2xNYGl1qE3E5"></script>
+        <script src="./js/jquery-3.1.1.js"></script>
+    </head>
+    <body>
+      <div style="width:1250px;margin:0px auto;height:790px;border:#ccc solid 1px" class="mapframe">
+	    
+	    <div style="position:relative;top:5px;left:380px" id="menu">
+		<ul> 
+			<li class="yes"><a indepth="true" href="./"  title="民族分布">民族分布</a></li>
+			<li ><a indepth="true" href="./edu01.html" title="教育情况">教育情况</a></li>
+			<li ><a href="./emp01.html" title="就业情况">就业情况</a></li>
+		</ul>		
+	    </div>
+    
+       <select style="position:relative;top:100px;left:1130px" id="sizer_one" onchange="province()" >
+              <option value ="nomean">请选择民族</option>
+			  <option value ="Tibetan">藏族</option>
+			  <option value ="Zhuang">壮族</option>
+			  <option value="Qiang">羌族</option>
+			  <option value="Yi">彝族</option>
+		</select>   
+		
+		<select style="position:relative;top:220px;left:1030px" id="sizer_two" onchange="area()">
+		<!--<option value ="nomean">请选择省份</option>-->
+		</select> 
+		
+     	<div style="width:950px;margin:0px auto;height:700px;border:#ccc solid 1px" id="dituContent"></div>
+
+  </div>
+   
+  
+    </body>
+    
+ <script type="text/javascript">
+     
+     //for some reasons,only if the onchange fucntion is included in the html page can be functioning 
+     var province_all=['北京','天津','上海','重庆','河北','河南','云南','辽宁','黑龙江','湖南','安徽','山东','新疆','江苏','浙江','江西','湖北','广西','甘肃','山西','内蒙古','陕西','吉林', '福建','贵州', '广东', '青海', '西藏','四川', '宁夏','海南','台湾','香港','澳门'];
+     
+     
+     var province_one;
+     var province_two;
+     var province_three;
+     var myChart;
+	 var option;
+	 var order=[];
+	 
+     function  createXMLHttpRequest()
+	    {
+	    	if(window.XMLHttpRequest)
+	    		{
+	    			XMLHttpReq = new XMLHttpRequest();
+	    		}
+	    	else
+	    	  if(window.ActiveXObject)
+	    		  {
+	    		  	try{
+	    		  		XMLHttpReq = new ActiveXObject("Msxm12.XMLHTTP");
+	    		  	}catch(e){
+	    		  		try{
+	    		  			XMLHttpReq = new ActiveXObject("Microsoft.XMLHTTP");
+	    		  		}catch(e){}
+	    		  	}
+	    		  }
+	    }
+	    
+	    function proccessResponse()
+	    {
+	    	if(XMLHttpReq.readyState == 4)
+	    		{
+	    			if(XMLHttpReq.status == 200)
+	    				{
+	    					updateList();
+	    				}
+	    			else
+	    				{
+	    					window.alert("您所请求的页面有异常");
+	    				}
+	    		}
+	    	
+	    }
+	    
+	    function sendRequest(url)
+	    {
+	    	createXMLHttpRequest();
+	    	XMLHttpReq.open("GET",url,true);
+	    	XMLHttpReq.onreadystatechange = proccessResponse;//when writing like that:XMLHttpReq.onreadystatechange = proccessResponse;the XMLHttpReq.readyState will never be 1
+	    	XMLHttpReq.send(null);
+	    }
+	    
+	    function  province()
+	    {
+	  	      var sizer_one = document.getElementById("sizer_one");
+	    	  var one_value = sizer_one.value;
+	    	  
+	    	  var sizer_two = document.getElementById("sizer_two");
+	    	  var s_length = sizer_two.options.length;
+	    	  if(s_length>0)
+	    		  {
+	    		  	     for(var i=0;i<s_length;i++)
+	    		  		{
+	    		  			sizer_two.options.remove(i);
+	    		  		}
+	    		  }
+	    	  
+	    	 var url ="LoadProvince?ethnic="+one_value;
+	    	 sendRequest(url);
+	    }
+	    
+	    function addOption(val,txt)//二级联动
+	    {
+		    var sizer_two = document.getElementById("sizer_two");
+		     
+		    var opt=document.createElement("option");
+		    opt.text=txt;
+		    opt.value=val;
+	     
+	     	sizer_two.options.add(opt);
+	    }
+	    
+	    function updateList()
+	    {
+	    	var result = XMLHttpReq.responseXML.getElementsByTagName("province");
+	    	var option_op = myChart.getOption();
+	    	var map_series = option_op.series[0].data;
+	    	
+	    	province_one=result[0].firstChild.nodeValue;
+	    	addOption("province_one",province_one);
+	    	alert(province_one);
+	    	//option_op.series[0].data[3].selected = true;
+	    
+	    	province_two=result[1].firstChild.nodeValue;
+	    	addOption("province_two",province_two);
+	    	alert(province_two);
+	    	//option_op.series[0].data[4].selected = true;
+	    	
+	    	province_three=result[2].firstChild.nodeValue;
+	    	addOption("province_three",province_three);
+	    	alert(province_three);
+	    	//option_op.series[0].data[5].selected = true;
+	    	
+	    	for(var i =0;i <34;i++)
+	    	{
+	    		if(map_series[i].name==province_one||map_series[i].name==province_two||map_series[i].name==province_three)//the comparable method do exit problem which can be solved by using '==' rather than using 'equals'
+	    	    {
+	    			map_series[i].selected = true;
+	    			order = i;
+	    			alert("order="+order);
+	    	    }
+	    	}
+	    	
+	    	myChart.setOption(option_op,true);
+	    }
+	    /*
+	    function changeSelect()
+	    {
+	      	
+	           for(var i=0;i <option.series[0].data.length;i++)
+	        	   {
+	        	   		if(option.series[0].data[i].name.equals(province_one)|option.series[0].data[i].name.equals(province_two)|option.series[0].data[i].name.equals(province_three))
+	        	   		{
+	        	   			option.series[0].data[i].selected = true;
+	        	   		}
+	        	   }
+	    }*/
+
+	    require.config({
+	        paths: 
+	        {
+	            echarts: './echarts-js'//legal
+	        },
+	        packages: 
+	        [
+	            {
+	                name: 'BMap',
+	                location: './echarts-src',//legal
+	                main: 'main'
+	            }
+	        ]
+	    });
+
+	   
+
+	    
+	    require
+	    (
+		    [
+		        'echarts',
+		        'BMap',
+		        'echarts/chart/map',
+		        'echarts/chart/pie'
+		    ],
+		    //draw_init
+	 
+		    
+		    function (ec){	
+		       myChart=ec.init(document.getElementById('dituContent'));
+			     
+	           option = 
+	            {
+	            		
+	            		backgroundColor:'rgba(255,255,153,1)',
+	            	    tooltip :
+	            	    {
+	            	        trigger: 'item'
+	            	        
+	            	    },
+	            	    legend: 
+	            	    {
+	            	        x:'right',
+	            	        selectedMode:false,
+	            	        data:[]
+	            	    },
+	            	    dataRange: 
+	            	    {
+	            	        orient: 'horizontal',
+	            	        x: 'right',
+	            	        y:'top',
+	            	        min: 0,
+	            	        max: 1000,
+	            	        color:['orange','yellow'],
+	            	        text:['高','低'],           // 文本，默认为数值文本
+	            	        splitNumber:0
+	            	    },
+	            	    series : 
+	            	    [
+	            	        {
+	            	            name: '省份选择器',
+	            	            type: 'map',
+	            	            mapType: 'china',
+	            	            mapLocation: 
+	            	            {
+	            	                x: 'left',
+	            	                y: 'top',
+	            	                width: '35%'
+	            	            },
+	            	            roam: true,
+	            	            selectedMode : 'multiple',
+	            	            itemStyle:
+	            	            {
+	            	                normal: 
+	            	                {
+	            	                    borderWidth:2,
+	            	                    borderColor:'#663300',
+	            	                    color: '#99CC99',
+	            	                    label: 
+	            	                    {
+	            	                        show: false
+	            	                    }
+	            	                },
+	            	                emphasis: 
+	            	                {                 // 选中样式
+	            	                    borderWidth:2,
+	            	                    borderColor:'#fff',
+	            	                    color: 'orange',
+	            	                    label: 
+	            	                    {
+	            	                        show: true,
+	            	                        textStyle:
+	            	                        {
+	            	                            color: '#fff'
+	            	                        }
+	            	                    }
+	            	                }
+	            	            },
+	            	            data: [
+	            	                {name: '北京', selected:false},//1
+	            	                {name: '天津', selected:false},//2
+	            	                {name: '上海', selected:false},//3
+	            	                {name: '重庆', selected:false},//4
+	            	                {name: '河北', selected:false},//5
+	            	                {name: '河南', selected:false},//6
+	            	                {name: '云南', selected:false},//7
+	            	                {name: '辽宁', selected:false},//8
+	            	                {name: '黑龙江', selected:false},//9
+	            	                {name: '湖南', selected:false},//10
+	            	                {name: '安徽', selected:false},//11
+	            	                {name: '山东', selected:false},//12
+	            	                {name: '新疆', selected:false},//13
+	            	                {name: '江苏', selected:false},//14
+	            	                {name: '浙江', selected:false},//15
+	            	                {name: '江西', selected:false},//16
+	            	                {name: '湖北', selected:false},//17
+	            	                {name: '广西', selected:false},//18
+	            	                {name: '甘肃', selected:false},//19
+	            	                {name: '山西', selected:false},//20
+	            	                {name: '内蒙古', selected:false},//21
+	            	                {name: '陕西', selected:false},//22
+	            	                {name: '吉林', selected:false},//23
+	            	                {name: '福建', selected:false},//24
+	            	                {name: '贵州', selected:false},//25
+	            	                {name: '广东', selected:false},//26
+	            	                {name: '青海', selected:false},//27
+	            	                {name: '西藏', selected:false},//28
+	            	                {name: '四川', selected:false},//29
+	            	                {name: '宁夏', selected:false},//30
+	            	                {name: '海南', selected:false},//31
+	            	                {name: '台湾', selected:false},//32
+	            	                {name: '香港', selected:false},//33
+	            	                {name: '澳门', selected:false}//34
+	            	            ]
+	            	        }
+	            	    ],
+	            	   animation: false
+	            	};//option
+	          // changeSelect();
+	          
+	            	
+	           var ecConfig = require('echarts/config');
+	           myChart.on(ecConfig.EVENT.CLICK,function (params) {
+	        	  // alert(params.seriesIndex);//params.name is the chinese character of the province
+	        	  alert(params.clicked);
+	        	  /* for(var i=0;i <3;i++)
+	        		   {
+	        		   		if(option.series[0].data[order[i]].selected!=true)
+	        		   			option.series[0].data[order[i]].selected = true;
+	        		   }*/
+	        	   var edus=[];
+	        	   var pros=[];
+	        	   $.ajax({
+	                   type : "get",
+	                   //contentType: "application/json; charset=utf-8",
+	                   async : true,            //异步请求（同步请求将会锁住浏览器，用户其他操作必须等待请求完成才可以执行）
+	                   url : "LoadPie?province="+params.name,  
+	                   data : {},
+	                   dataType : "json",        //返回数据形式为json
+	                   contentType: "application/x-www-form-urlencoded; charset=utf-8", 
+	                   success : function(result) 
+	                   {
+	                       //请求成功时执行该函数内容，result即为服务器返回的json对象
+	                       if (result) 
+	                       {
+	                    	   var result = eval(result);
+	                    	   
+	                    	   //var result = jquery.parseJSON(result); 
+	                    	   //var results = result.rows;
+	                    	  // alert(result);//the result is[object,obejct],[object,obejct],[object,obejct],[object,obejct]
+	                    	   //solve the chinese character code problem:go to the option named properties and set the text file code with UTF-8
+	                    	  
+	                    	   for(var i =0;i <3;i++)
+	                    		   {
+	                    		   	 edus.push({
+	                    	                value: result[i].edu_value,
+	                    	                name: result[i].edu_name
+	                    	            });
+	                    		   }
+	                    	   for(var j =3;j <result.length;j++)
+	                    		   {
+		                    		   pros.push({
+		               	                value: result[j].edu_value,
+		               	                name: result[j].edu_name
+		               	            });
+	                    		   }
+	                    	   
+	                    	   //var option = myChart.getOption();
+	                    	   
+	                    	   option.series[1]=
+	                    	   {
+	                    			   name: '受教育情况',
+	                         	        type: 'pie',
+	                         	        selectedMode: 'single',
+	                         	        center: [document.getElementById('dituContent').offsetWidth - 400, 325],
+	                                     radius : [0, 70],
+	                                     
+	                                     // for funnel
+	                                     x: '20%',
+	                                     width: '40%',
+	                                     funnelAlign: 'right',
+	                                     max: 1548,
+	                                     
+	                                     itemStyle : 
+	                                     {
+	                                         normal : 
+	                                         {
+	                                             label : 
+	                                             {
+	                                                 position : 'inner'
+	                                             },
+	                                             labelLine : 
+	                                             {
+	                                                 show : false
+	                                             }
+	                                         }
+	                                     },
+	                                     data:edus
+	                    	   };
+	                    	   
+	                    	   option.series[2]=
+	                    	   {
+	                    			name:'就学专业领域比率',
+	                   	            type:'pie',
+	                   	            center: [document.getElementById('dituContent').offsetWidth - 400, 325],
+	                   	            radius : [100, 140],
+	                   	            
+	                   	            // for funnel
+	                   	            x: '60%',
+	                   	            width: '35%',
+	                   	            funnelAlign: 'left',
+	                   	            max: 1048,
+	                   	            
+	                   	            data:pros
+	                    	   };
+	                       }//if
+	                   
+	                  },
+	                   error : function(errorMsg) 
+	                   {
+	                          
+	                       alert("数据失败!");
+	                   }
+	                   
+	                   })//ajax
+	                 myChart.setOption(option,true);  
+	       	});//on
+	           
+	           window.onresize = myChart.onresize;//可使echarts大小自适应div
+			   myChart.setOption(option,true);  
+		    }//function
+	   		
+	    );//require
+    </script >
+    
+</html>

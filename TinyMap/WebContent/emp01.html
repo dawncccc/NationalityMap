@@ -1,0 +1,509 @@
+  <!-- 
+      *  emp01.html:民族就业信息展示
+      *
+      *   Copyright(C) 2016.10.03-,田岑熙 tiancenxi@126.com
+      *   All rights reserved.
+      *
+   -->
+<html>
+    <head>
+        <meta charset="utf-8">
+        <link rel="stylesheet" type="text/css" href="./css/Index.css" media="all">
+        <script src="./echarts-js/echarts.js"></script>
+        <script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=ZUONbpqGBsYGXNIYHicvbAbM"></script>
+        <script src="./js/jquery.min.js"></script>
+    </head>
+    <body>
+      <div style="width:1250px;margin:0px auto;height:790px;border:#ccc solid 1px" class="mapframe">
+	    
+	    <div style="position:relative;top:5px;left:380px" id="menu">
+		<ul> 
+			<li class="yes"><a indepth="true" href="./"  title="民族分布">民族分布</a></li>
+			<li ><a indepth="true" href="./edu01.html" title="教育情况">教育情况</a></li>
+			<li ><a href="./emp01.html" title="就业情况">就业情况</a></li>
+		</ul>		
+	    </div>
+    
+       	<select style="position:relative;top:100px;left:1130px" id="sizer_one" onchange="province()" >
+              <option value ="nomean">请选择民族</option>
+			  <option value ="Tibetan">藏族</option>
+			  <option value ="Zhuang">壮族</option>
+			  <option value="Qiang">羌族</option>
+			  <option value="Yi">彝族</option>
+		</select>   
+		
+		<select style="position:relative;top:220px;left:1030px" id="sizer_two" onchange="area()">
+		<!--  <option value ="nomean">请选择省份</option> -->
+		</select> 
+		
+     	<div style="width:950px;margin:0px auto;height:700px;border:#ccc solid 1px" id="dituContent"></div>
+
+  </div>
+    </body>
+    
+     <script type="text/javascript">
+     //for some reasons,only if the onchange fucntion is included in the html page can be functioning 
+     
+     // var one_value;
+     var BMapExt;
+     var myChart;
+     var series_update;
+     
+	 function  createXMLHttpRequest()
+	    {
+	    	if(window.XMLHttpRequest)
+	    		{
+	    			XMLHttpReq = new XMLHttpRequest();
+	    		}
+	    	else
+	    	  if(window.ActiveXObject)
+	    		  {
+	    		  	try{
+	    		  		XMLHttpReq = new ActiveXObject("Msxm12.XMLHTTP");
+	    		  	}catch(e){
+	    		  		try
+	    		  		{
+	    		  			XMLHttpReq = new ActiveXObject("Microsoft.XMLHTTP");
+	    		  		}catch(e){}
+	    		  	}
+	    		  }
+	    }
+	    
+	    function proccessResponse()
+	    {
+	    	if(XMLHttpReq.readyState == 4)
+	    		{
+	    			if(XMLHttpReq.status == 200)
+	    				{
+	    					updateList();
+	    				}
+	    			else
+	    				{
+	    					window.alert("您所请求的页面有异常");
+	    				}
+	    		}
+	    	
+	    }
+	    
+	    function sendRequest(url)
+	    {
+	    	createXMLHttpRequest();
+	    	XMLHttpReq.open("GET",url,true);
+	    	XMLHttpReq.onreadystatechange = proccessResponse;//when writing like that:XMLHttpReq.onreadystatechange = proccessResponse;the XMLHttpReq.readyState will never be 1
+	    	XMLHttpReq.send(null);
+	    }
+	    
+	    function  province()
+	    {
+	  	      var sizer_one = document.getElementById("sizer_one");
+	    	  var one_value = sizer_one.value;
+	    	  
+	    	  var sizer_two = document.getElementById("sizer_two");
+	    	  var s_length = sizer_two.options.length;
+	    	  
+	    	  if(s_length>=0)
+	    		  {
+	    		  	     for(var i=0;i<s_length;i++)
+	    		  		{
+	    		  			sizer_two.options.remove(i);
+	    		  		}
+	    		  }
+	    	 var url ="LoadProvince?ethnic="+one_value;
+	    	 sendRequest(url);
+	    }
+	    
+	    function addOption(val,txt)//二级联动
+	    {
+		    var sizer_two = document.getElementById("sizer_two");
+		     
+		    var opt=document.createElement("option");
+		    opt.text=txt;
+		    opt.value=val;
+	     
+	     	sizer_two.options.add(opt);
+	    }
+	    
+	    function updateList()
+	    {
+	    	var sizer_one = document.getElementById("sizer_one");
+	    	var one_value = sizer_one.value;
+	    	
+	    	var result = XMLHttpReq.responseXML.getElementsByTagName("province");
+	    	
+	    	for(var i =0;i <result.length;i++)
+	    	{
+	    		addOption(i,result[i].firstChild.nodeValue);
+	    	}
+	    	
+	    	
+	    	province_one=result[0].firstChild.nodeValue;
+	    	addOption("province_one",province_one);
+	    	alert(province_one);
+	    
+	    	province_two=result[1].firstChild.nodeValue;
+	    	addOption("province_two",province_two);
+	    	alert(province_two);
+	    	
+	    	province_three=result[2].firstChild.nodeValue;
+	    	addOption("province_three",province_three);
+	    	alert(province_three);
+	    	
+	    
+	    	//var my_chart = BMapExt.getECharts(); 
+	        var option_op = myChart.getOption();
+	    	//option_op.legend.data = one_value;
+	    	option_op.series[0] ={
+	        		
+	                    name:one_value,//'壮族',
+	                    type:'map',
+	                    mapType: 'none',
+	                    data:[],
+	                    geoCoord:
+	                    {
+	                        '北京': [116.4551,40.2539],
+	                        '南宁': [108.479,23.1152],
+	                        '广州': [113.5107,23.2196],
+	                        '深圳': [114.5435,22.5439],
+	                    },
+
+	                    markLine : 
+	                    {
+	                        smooth:true,
+	                        symbol:['none','circle'],
+	                        symbolSize:1,
+	                        effect : 
+	                        {
+	                            show: true,
+	                            scaleSize: 1,
+	                            period: 15,//控制动画的延迟，值越大延迟时间越慢
+	                            color: '#cc0033',//控制的为移动的线条颜色
+	                            shadowBlur: 25
+	                        },
+	                        itemStyle : 
+	                        {
+	                            normal: 
+	                            {
+	                                borderWidth:1,
+	                                lineStyle: 
+	                                {
+	                                    type: 'dotted',
+	                                    shadowBlur: 5
+	                                }
+	                            }
+	                        },
+	                        data : 
+	                        [//设置markline的起点和终点，之后的value为在终点显示的数值
+	                            [{name:'南宁'}, {name:'北京',value:20}],
+	                            [{name:'南宁'}, {name:'广州',value:70}],
+	                            [{name:'南宁'}, {name:'深圳',value:10}]
+	                        ]
+	                    },
+	                    markPoint : 
+	                    {
+	                        symbol:'emptyCircle',
+	                        symbolSize :20,
+	                        effect : 
+	                        {
+	                            show: true,
+	                            shadowBlur : 0
+	                        },
+	                        itemStyle:
+	                        {
+	                            normal:
+	                            {
+	                                label:{show:false}
+	                            }
+	                        },
+	                        emphasis: 
+	                        {
+	                            label:{position:'top'}
+	                        },
+	                        data : 
+	                        [
+	                            {name:'广州',value:70},
+	                            {name:'北京',value:20},
+	                            {name:'深圳',value:10}
+	                        ]
+	                    }
+       	   }//option_op
+       	   
+       	  //the two expression below should both be reserved
+       	 myChart.setOption(option_op,true);
+       	 BMapExt.setOption(option_op,true);
+	        
+	    }
+	    
+	    
+	    require.config({
+	        paths: 
+	        {
+	            echarts: './echarts-js'//legal
+	        },
+	        packages: 
+	        [
+	            {
+	                name: 'BMap',
+	                location: './echarts-src',//legal
+	                main: 'main'
+	            }
+	        ]
+	    });
+
+	    require(
+	    [
+	        'echarts',
+	        'BMap',
+	        'echarts/chart/map'
+	    ],
+	    function (echarts, BMapExtension)
+	    {
+
+	        // 初始化地图
+	       //其中#后跟着为地图容器ID号
+	       BMapExt = new BMapExtension($('#dituContent')[0],BMap,echarts,{
+	            enableMapClick: false
+	        });
+	        var map = BMapExt.getMap();
+	        var  container = BMapExt.getEchartsContainer();
+
+	        var startPoint = {
+	            x: 104.114129,
+	            y: 37.550339
+	        };
+
+	        var point = new BMap.Point(startPoint.x,startPoint.y);
+	        map.centerAndZoom(point, 5);
+	        map.enableScrollWheelZoom(true);
+	        
+	        // 地图自定义样式
+	        map.setMapStyle({
+	            styleJson: [
+	            	{
+	                    "featureType": "land",
+	                    "elementType": "geometry.fill",
+	                    "stylers": 
+	                    {
+	                              //"color": "#07633f",
+	                              "color":"#FFFF99",
+	                              "lightness": 25,
+	                              "saturation": 45
+	                    }
+	          },
+	          {
+	                    "featureType": "water",
+	                    "elementType": "geometry",
+	                    "stylers": 
+	                    {
+	                              //"color": "#236a7a",
+	                              "color": "#99CC99",
+	                              "lightness": 25
+	                    }
+	          },
+	          {
+	                    "featureType": "poi",
+	                    "elementType": "labels.text.fill",
+	                    "stylers": 
+	                    {
+	                              "color": "#990000",
+	                              "hue": "#cc0000",
+	                              "lightness": 40
+	                    }
+	          },
+	          {
+	                    "featureType": "arterial",
+	                    "elementType": "geometry",
+	                    "stylers": {
+	                              "color": "#741b47",
+	                              //"color": "#CCCC33",
+	                              "lightness": 10,
+	                              "saturation": 50
+	                    			}
+	          },
+	          {
+	                    "featureType": "highway",
+	                    "elementType": "geometry",
+	                    "stylers": {
+	                              "color": "#ff9900",
+	                              "lightness": 40
+	                    }
+	          },
+	          {
+	                    "featureType": "green",
+	                    "elementType": "geometry.stroke",
+	                    "stylers": {
+	                              "color": "#6aa84f",
+	                              "lightness": 23,
+	                              "saturation": -100
+	                    }
+	          },
+	          {
+	              "featureType": "boundary",
+	              "elementType": "geometry.fill",
+	              "stylers": {
+	                        //"color": "#666600",
+	                        "color":"#663300",
+	                        //"hue": "#666600",
+	                        "weight": "1",
+	                        "lightness": 60,
+	                        "saturation": 10
+	              }
+	    		},
+	          {
+	                    "featureType": "building",
+	                    "elementType": "geometry",
+	                    "stylers": {
+	                              "color": "#ffd966"
+	                    }
+	          },
+	          {
+	                    "featureType": "local",
+	                    "elementType": "geometry",
+	                    "stylers": 
+	                    {
+	                              "color": "#351c75",
+	                              "lightness": 40,
+	                              "saturation": 30,
+	                              "visibility": "on"
+	                    }
+	          }
+	            
+	          ]
+	        
+	        });
+	        
+
+	        var option = 
+	        {
+	            color: ['DarkOrange','aqua','darkgreen'],
+	            tooltip :
+	            {
+	                trigger: 'item',
+	                formatter: function (v) 
+	                {
+	                    return v[1].replace(':',' --> ');
+	                }
+	            },
+	            /*
+	            legend: 
+	            {
+	                orient: 'vertical',
+	                x:'left',
+	                //data:['藏族','羌族','壮族','彝族'],
+	                selectedMode: 'single',
+	                selected:
+	                {
+	                	'羌族':false,
+	                	'壮族':false,
+	                	'彝族':false
+	                },
+	                textStyle : 
+	                {
+	                    color: '#cc0033'//字体颜色
+	                }
+	        	   
+	            },*/
+	            dataRange:
+	            {
+	                min : 0,
+	                max : 100,
+	                range: 
+	                {
+	                    start: 0,
+	                    end: 100
+	                },
+	                x: 'right',
+	                calculable : true,
+	                color: ['#ff3333', 'orangered','orange','yellowgreen','royalblue'],
+	                text:['就业率（单位：百分比）'],
+	                textStyle:
+	                {
+	                    color:'#000'
+	                }
+	            },
+	            
+	            series : 
+	           [
+	        	   {
+	                    name:'藏族',
+	                    type:'map',
+	                    mapType: 'none',
+	                    data:[],
+	                    geoCoord:
+	                    {
+	                        '北京': [116.4551,40.2539],
+	                        '拉萨': [91.00000,29.60000],
+	                        '成都': [103.9526,30.7617],
+	                        '重庆': [106.45000,29.56667]
+	                    },
+
+	                    markLine : 
+	                    {
+	                        smooth:true,
+	                        symbol:['none','circle'],
+	                        symbolSize:1,
+	                        effect : 
+	                        {
+	                            show: true,
+	                            scaleSize: 1,
+	                            period: 15,//控制动画的延迟，值越大延迟时间越慢
+	                            color: '#cc0033',//控制的为移动的线条颜色
+	                            shadowBlur: 25
+	                        },
+	                        itemStyle : 
+	                        {
+	                            normal: 
+	                            {
+	                                borderWidth:1,
+	                                lineStyle: 
+	                                {
+	                                    type: 'dotted',
+	                                    shadowBlur: 5
+	                                }
+	                            }
+	                        },
+	                        data : 
+	                        [//设置markline的起点和终点，之后的value为在终点显示的数值
+	                            [{name:'拉萨'}, {name:'成都',value:50}],
+	                            [{name:'拉萨'}, {name:'重庆',value:20}],
+	                            [{name:'拉萨'}, {name:'北京',value:30}]
+	                        ]
+	                    },
+	                    markPoint : 
+	                    {
+	                        symbol:'emptyCircle',
+	                        symbolSize :20,
+	                        effect : 
+	                        {
+	                            show: true,
+	                            shadowBlur : 0
+	                        },
+	                        itemStyle:
+	                        {
+	                            normal:
+	                            {
+	                                label:{show:false}
+	                            }
+	                        },
+	                        emphasis: 
+	                        {
+	                            label:{position:'top'}
+	                        },
+	                        data : 
+	                        [
+	                            {name:'成都',value:50},
+	                            {name:'北京',value:30},
+	                            {name:'重庆',value:20}
+	                        ]
+	                    }
+	                }
+	           ]
+	        };//option
+
+	        myChart = BMapExt.initECharts(container);
+	        window.onresize = myChart.onresize;
+	        BMapExt.setOption(option,true);
+	       //myChart.setOption(option);//it did work but can not place the markerpoints at the correct position
+	    }//function inside
+	);//require  
+    </script>
+</html>
